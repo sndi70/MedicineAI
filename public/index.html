@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#205b46">
+    <meta name="description" content="Подредете лекарствата и покупките на цялото семейство на едно място.">
+    <title>Семеен лекарствен регистър</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="registry-shell">
+      <header class="registry-header">
+        <div class="header-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M9.3 14.7 14.7 9.3M7.1 16.9l-1 1a4.1 4.1 0 0 1-5.8-5.8l4.3-4.3a4.1 4.1 0 0 1 5.8 0M16.9 7.1l1-1a4.1 4.1 0 0 1 5.8 5.8l-4.3 4.3a4.1 4.1 0 0 1-5.8 0" transform="translate(1 1) scale(.92)"/></svg>
+        </div>
+        <div class="header-copy">
+          <h1>Семеен лекарствен регистър</h1>
+          <p>Покупки · Наличности · Напомняния</p>
+        </div>
+        <span class="header-status" aria-label="Данните се съхраняват локално">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+        </span>
+      </header>
+
+      <section class="family-section" aria-labelledby="family-heading">
+        <div class="section-label-row">
+          <h2 id="family-heading">Избери човек</h2>
+          <span id="total-members" class="family-total"></span>
+        </div>
+        <nav id="family-list" class="family-picker" aria-label="Членове на семейството"></nav>
+      </section>
+
+      <section class="inventory-section" aria-labelledby="active-member-name">
+        <div class="inventory-heading">
+          <div>
+            <h2 id="active-member-name">Избери човек</h2>
+            <p id="inventory-description">Лекарствата на всеки член се пазят отделно.</p>
+          </div>
+          <button id="add-medicine-button" class="add-medicine-button" type="button" disabled>
+            <span aria-hidden="true">+</span> Добави лекарство
+          </button>
+        </div>
+        <label class="search-box">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg>
+          <input id="search-input" type="search" placeholder="Търси лекарство или баркод онлайн..." aria-label="Търси лекарство или баркод онлайн">
+        </label>
+        <div id="medicine-grid" class="medicine-list"></div>
+      </section>
+
+      <footer class="registry-footer"><span class="status-dot"></span> Данните се съхраняват локално</footer>
+    </main>
+
+    <dialog id="member-dialog" class="form-dialog">
+      <form id="member-form">
+        <div class="dialog-heading"><div><p class="eyebrow">НОВ ПРОФИЛ</p><h2>Добави член на семейството</h2></div><button class="close-button" type="button" data-close aria-label="Затвори">×</button></div>
+        <label class="field-label">Име<input name="name" maxlength="80" placeholder="Например: Мария" required autofocus></label>
+        <p class="form-error" id="member-error" role="alert"></p>
+        <button class="primary-button full-button" type="submit">Добави профил <span>→</span></button>
+      </form>
+    </dialog>
+
+    <dialog id="medicine-dialog" class="form-dialog medicine-dialog">
+      <form id="medicine-form">
+        <div class="dialog-heading"><div><p class="eyebrow">НОВА ПОКУПКА</p><h2>Добави лекарство</h2></div><button class="close-button" type="button" data-close aria-label="Затвори">×</button></div>
+        <p class="dialog-description">Въведи или сканирай баркода — автоматично ще потърсим името и снимката на продукта онлайн.</p>
+        <div class="lookup-row"><label class="field-label grow">Баркод<input name="barcode" inputmode="numeric" autocomplete="off" placeholder="Например: 3800000000000" pattern="([0-9]{8}|[0-9]{12,14})" minlength="8" maxlength="14" required></label><button id="lookup-button" class="secondary-button" type="button"><span aria-hidden="true">⌕</span> Потърси</button></div>
+        <div id="lookup-message" class="lookup-message" role="status"></div>
+        <div class="form-grid">
+          <label class="field-label span-two">Име на продукта<input name="productName" maxlength="160" placeholder="Въведи име на лекарството" required></label>
+          <label class="field-label">Количество опаковки<input name="quantity" type="number" min="1" max="99999" value="1" required></label>
+          <label class="field-label">Размер на опаковката<input name="packageSize" maxlength="80" placeholder="Напр. 20 таблетки"></label>
+          <label class="field-label">Дата на покупка<input name="purchaseDate" type="date" required></label>
+          <label class="field-label">Дневен прием<input name="dailyUsage" maxlength="200" placeholder="Напр. 1 таблетка сутрин" required></label>
+          <div class="form-image-field span-two">
+            <span class="field-label">Снимка на продукта</span>
+            <div id="medicine-image-preview" class="medicine-image-preview" role="img" aria-label="Снимката на продукта ще се покаже тук">
+              <span class="image-placeholder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 4.5a5.66 5.66 0 0 0-4 9.66l5.34 5.34a5.66 5.66 0 0 0 8-8L12.5 6.16a5.64 5.64 0 0 0-4-1.66Z"/><path d="m7 15 8-8"/></svg></span>
+              <span class="image-preview-caption">Снимката ще се покаже след търсене по баркод.</span>
+            </div>
+            <input name="imageUrl" type="hidden">
+          </div>
+        </div>
+        <p class="form-hint">Количеството е броят закупени опаковки и не може да се определи от баркода. Размерът на опаковката се попълва автоматично, когато е наличен. Напомнянето се изчислява при съвпадащи мерни единици (напр. „30 таблетки“ и „1 таблетка дневно“); ако и двете стойности са само числа (напр. „25“ и „1“), приема се, че мерните им единици съвпадат. Показва се 3 дни преди очаквания край на наличността.</p>
+        <p class="form-error" id="medicine-error" role="alert"></p>
+        <button class="primary-button full-button" type="submit">Запази лекарството <span>→</span></button>
+      </form>
+    </dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
